@@ -36,6 +36,7 @@ public class JCFUserService implements UserService {
         if (id == null) {
             throw new IllegalArgumentException("ID는 null일 수 없습니다.");
         }
+
         return data.get(id);
     }
 
@@ -61,12 +62,17 @@ public class JCFUserService implements UserService {
             throw new IllegalArgumentException("사용자 이름은 null일 수 없습니다.");
         }
 
-        if (!data.containsKey(id)) {
+        // 기존 사용자 조회
+        User existing = data.get(id);
+
+        if (existing == null) {
             throw new IllegalArgumentException("수정할 사용자가 존재하지 않습니다.");
         }
 
-        data.put(id, user);
-        return user;
+        // 기존 객체의 사용자 이름만 수정
+        existing.update(user.getUsername());
+
+        return existing;
     }
 
     // 사용자 삭제

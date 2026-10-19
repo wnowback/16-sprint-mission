@@ -84,9 +84,14 @@ public class JCFChannelService implements ChannelService {
             }
         }
 
-        // 수정 대상의 ID를 유지하면서 저장
-        data.put(id, channel);
-        return channel;
+        // 기존 채널 객체를 ID로 찾기
+        Channel existingChannel = data.get(id);
+
+        // 기존 채널의 이름만 수정하고 수정 시간을 갱신
+        existingChannel.update(channel.getChannel());
+
+        // 수정된 기존 채널 객체 반환
+        return existingChannel;
     }
 
     // 채널 삭제

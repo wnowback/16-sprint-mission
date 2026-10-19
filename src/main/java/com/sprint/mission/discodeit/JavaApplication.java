@@ -1,4 +1,3 @@
-
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.User;
@@ -12,6 +11,8 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+
+import java.util.UUID;
 
 public class JavaApplication {
 
@@ -81,6 +82,13 @@ public class JavaApplication {
         Channel channel = new Channel("자유 채널");
         channelService.create(channel);
 
+        try {
+            channelService.create(new Channel("자유 채널"));
+            System.out.println("테스트 실패: 중복 채널이 생성됨");
+        } catch (IllegalArgumentException e) {
+            System.out.println("테스트 성공: 중복 채널 생성 차단");
+        }
+
         System.out.println("=== 채널 등록 후 ===");
         System.out.println(
                 channelService.findById(channel.getId()).getChannel()
@@ -101,7 +109,7 @@ public class JavaApplication {
         // =================================
 
         // 존재하는 사용자와 채널을 연결해서 메시지 생성
-        Message message = new Message("안녕하세요 반가워용", user1, channel);
+        Message message = new Message("안녕하세요 반갑습니다.", user1, channel);
         messageService.create(message);
 
         System.out.println("=== 메시지 등록 후 ===");
@@ -152,6 +160,23 @@ public class JavaApplication {
 
         for (User user : userService.findAll()) {
             System.out.println(user.getUsername());
+        }
+        System.out.println("=== 없는 ID로 수정 테스트 ===");
+
+        try {
+            userService.update(UUID.randomUUID(), new User("없는 사용자"));
+            System.out.println("테스트 실패: 없는 사용자를 수정함");
+        } catch (IllegalArgumentException e) {
+            System.out.println("테스트 성공: 없는 사용자 수정 차단");
+        }
+
+        System.out.println("=== 없는 ID로 삭제 테스트 ===");
+
+        try {
+            userService.delete(UUID.randomUUID());
+            System.out.println("테스트 실패: 없는 사용자를 삭제함");
+        } catch (IllegalArgumentException e) {
+            System.out.println("테스트 성공: 없는 사용자 삭제 차단");
         }
     }
 }

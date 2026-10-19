@@ -1,44 +1,106 @@
-package com.sprint.mission.discodeit.service.jcf;  // 패키지 지정
+package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel; // Channel 클래스 사용
-import com.sprint.mission.discodeit.service.ChannelService; // 구현할 인터페이스
-import java.util.*; // UUID, Map, List, HashMap 등 사용
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.service.ChannelService;
+
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
 
-    private final Map<UUID, Channel> data; // 채널 데이터를 저장할 공간
+    private final Map<UUID, Channel> data;
 
-    public JCFChannelService() { // 생성자
-        this.data = new HashMap<>(); // 빈 저장 공간 초기화
+    // 생성자: 채널을 저장할 공간 만들기
+    public JCFChannelService() {
+        this.data = new HashMap<>();
     }
 
+    // 채널 생성
     @Override
-    public Channel create(Channel channel) { // 채널 생성
-        data.put(channel.getId(), channel); // ID와 채널 객체 저장
-        return channel; // 생성한 채널 반환
-    }
+    public Channel create(Channel channel) {
 
-    @Override
-    public Channel findById(UUID id) { // ID로 채널 조회
-        return data.get(id); // 해당 채널 반환, 없으면 null
-    }
-
-    @Override
-    public List<Channel> findAll() { // 모든 채널 조회
-        return new ArrayList<>(data.values()); // 모든 채널을 목록으로 반환
-    }
-
-    @Override
-    public Channel update(UUID id, Channel channel) { // 채널 수정
-        if (!data.containsKey(id)) { // 해당 ID가 없다면
-            return null; // 수정할 채널이 없음
+        if (channel == null) {
+            throw new IllegalArgumentException("채널은 null일 수 없습니다.");
         }
-        data.put(id, channel); // 기존 채널을 새 객체로 교체
-        return channel; // 수정한 채널 반환
+
+        if (channel.getChannel() == null) {
+            throw new IllegalArgumentException("채널 이름은 null일 수 없습니다.");
+        }
+
+        // 이미 같은 이름의 채널이 있는지 확인
+        for (Channel existingChannel : data.values()) {
+            if (existingChannel.getChannel().equals(channel.getChannel())) {
+                throw new IllegalArgumentException("이미 존재하는 채널 이름입니다.");
+            }
+        }
+
+        // 중복이 없으면 저장
+        data.put(channel.getId(), channel);
+        return channel;
     }
 
+    // ID로 채널 조회
     @Override
-    public void delete(UUID id) { // 채널 삭제
-        data.remove(id); // 해당 ID의 채널 삭제
+    public Channel findById(UUID id) {
+
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
+        return data.get(id);
+    }
+
+    // 모든 채널 조회
+    @Override
+    public List<Channel> findAll() {
+        return new ArrayList<>(data.values());
+    }
+
+    // 채널 수정
+    @Override
+    public Channel update(UUID id, Channel channel) {
+
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
+        if (channel == null) {
+            throw new IllegalArgumentException("채널은 null일 수 없습니다.");
+        }
+
+        if (channel.getChannel() == null) {
+            throw new IllegalArgumentException("채널 이름은 null일 수 없습니다.");
+        }
+
+        // 수정할 채널이 존재하는지 확인
+        if (!data.containsKey(id)) {
+            throw new IllegalArgumentException("수정할 채널이 존재하지 않습니다.");
+        }
+
+        // 다른 채널과 이름이 중복되는지 확인
+        for (Channel existingChannel : data.values()) {
+            if (!existingChannel.getId().equals(id)
+                    && existingChannel.getChannel().equals(channel.getChannel())) {
+                throw new IllegalArgumentException("이미 존재하는 채널 이름입니다.");
+            }
+        }
+
+        // 수정 대상의 ID를 유지하면서 저장
+        data.put(id, channel);
+        return channel;
+    }
+
+    // 채널 삭제
+    @Override
+    public void delete(UUID id) {
+
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
+        if (!data.containsKey(id)) {
+            throw new IllegalArgumentException("삭제할 채널이 존재하지 않습니다.");
+        }
+
+        data.remove(id);
     }
 }

@@ -1,62 +1,124 @@
-package com.sprint.mission.discodeit.service.jcf; // 패키지 지정
 
-import com.sprint.mission.discodeit.entity.Message; // Message 클래스 사용
-import com.sprint.mission.discodeit.service.MessageService; // 구현할 인터페이스
-import com.sprint.mission.discodeit.service.UserService;
+package com.sprint.mission.discodeit.service.jcf;
+
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
-import java.util.*; // UUID, Map, List, HashMap 등 사용
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+
+import java.util.*;
 
 public class JCFMessageService implements MessageService {
 
-    private final Map<UUID, Message> data; // 메시지 데이터를 저장할 공간
+    private final Map<UUID, Message> data;
     private final UserService userService;
     private final ChannelService channelService;
 
+    // 생성자: 메시지 저장 공간과 사용자·채널 서비스를 연결
     public JCFMessageService(UserService userService, ChannelService channelService) {
         this.data = new HashMap<>();
+
+        if (userService == null || channelService == null) {
+            throw new IllegalArgumentException("사용자 서비스와 채널 서비스는 null일 수 없습니다.");
+        }
+
         this.userService = userService;
         this.channelService = channelService;
     }
 
+    // 메시지 생성
     @Override
     public Message create(Message message) {
 
-        // 작성자가 실제로 등록된 사용자인지 확인
-        if (userService.findById(message.getUser().getId()) == null) {
-            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+        if (message == null) {
+            throw new IllegalArgumentException("메시지는 null일 수 없습니다.");
         }
 
-        // 메시지가 등록될 채널이 실제로 존재하는지 확인
-        if (channelService.findById(message.getChannel().getId()) == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+        if (message.getContent() == null) {
+            throw new IllegalArgumentException("메시지 내용은 null일 수 없습니다.");
         }
 
-        // 두 가지 확인을 모두 통과하면 메시지 저장
+        User user = message.getUser();
+        Channel channel = message.getChannel();
+
+        if (user == null || userService.findById(user.getId()) == null) {
+            throw new IllegalArgumentException("작성자가 존재하지 않습니다.");
+        }
+
+        if (channel == null || channelService.findById(channel.getId()) == null) {
+            throw new IllegalArgumentException("채널이 존재하지 않습니다.");
+        }
+
         data.put(message.getId(), message);
         return message;
     }
 
+    // ID로 메시지 조회
     @Override
-    public Message findById(UUID id) { // ID로 메시지 조회
-        return data.get(id); // 해당 메시지 반환, 없으면 null
-    }
+    public Message findById(UUID id) {
 
-    @Override
-    public List<Message> findAll() { // 모든 메시지 조회
-        return new ArrayList<>(data.values()); // 모든 메시지를 목록으로 반환
-    }
-
-    @Override
-    public Message update(UUID id, Message message) { // 메시지 수정
-        if (!data.containsKey(id)) { // 해당 ID가 없다면
-            return null; // 수정할 메시지가 없음
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
         }
-        data.put(id, message); // 기존 메시지를 새 객체로 교체
-        return message; // 수정한 메시지 반환
+
+        return data.get(id);
     }
 
+    // 모든 메시지 조회
     @Override
-    public void delete(UUID id) { // 메시지 삭제
-        data.remove(id); // 해당 ID의 메시지 삭제
+    public List<Message> findAll() {
+        return new ArrayList<>(data.values());
+    }
+
+    // 메시지 수정
+    @Override
+    public Message update(UUID id, Message message) {
+
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
+        if (message == null) {
+            throw new IllegalArgumentException("메시지는 null일 수 없습니다.");
+        }
+
+        if (message.getContent() == null) {
+            throw new IllegalArgumentException("메시지 내용은 null일 수 없습니다.");
+        }
+
+        if (!data.containsKey(id)) {
+            throw new IllegalArgumentException("수정할 메시지가 존재하지 않습니다.");
+        }
+
+        User user = message.getUser();
+        Channel channel = message.getChannel();
+
+        if (user == null || userService.findById(user.getId()) == null) {
+            throw new IllegalArgumentException("작성자가 존재하지 않습니다.");
+        }
+
+        if (channel == null || channelService.findById(channel.getId()) == null) {
+            throw new IllegalArgumentException("채널이 존재하지 않습니다.");
+        }
+
+        data.put(id, message);
+        return message;
+    }
+
+    // 메시지 삭제
+    @Override
+    public void delete(UUID id) {
+
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
+        if (!data.containsKey(id)) {
+            throw new IllegalArgumentException("삭제할 메시지가 존재하지 않습니다.");
+        }
+
+        data.remove(id);
     }
 }

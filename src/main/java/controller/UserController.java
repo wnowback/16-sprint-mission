@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
@@ -10,23 +11,25 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-    // 1. 사용자 등록
+    // 1. 사용자 등록 (기존 기능)
     @RequestMapping(
+            value = "/api/users",
             method = RequestMethod.POST,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
@@ -42,15 +45,27 @@ public class UserController {
         );
     }
 
-    // 2. 모든 사용자 조회
-    @RequestMapping(method = RequestMethod.GET)
+    // 2. 기존 사용자 전체 조회
+    @RequestMapping(
+            value = "/api/users",
+            method = RequestMethod.GET
+    )
     public Object findAll() {
         return userService.findAll();
     }
 
-    // 3. 사용자 정보 수정
+    // 3. 심화 요구사항: 사용자 전체 조회
     @RequestMapping(
-            value = "/{userId}",
+            value = "/api/user/findAll",
+            method = RequestMethod.GET
+    )
+    public ResponseEntity<List<UserDto>> findAllAdvanced() {
+        return ResponseEntity.ok(userService.findAll());
+    }
+
+    // 4. 사용자 정보 수정
+    @RequestMapping(
+            value = "/api/users/{userId}",
             method = RequestMethod.PATCH,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
@@ -68,18 +83,18 @@ public class UserController {
         );
     }
 
-    // 4. 사용자 삭제
+    // 5. 사용자 삭제
     @RequestMapping(
-            value = "/{userId}",
+            value = "/api/users/{userId}",
             method = RequestMethod.DELETE
     )
     public void delete(@PathVariable UUID userId) {
         userService.delete(userId);
     }
 
-    // 5. 사용자 온라인 상태 업데이트
+    // 6. 사용자 온라인 상태 업데이트
     @RequestMapping(
-            value = "/{userId}/status",
+            value = "/api/users/{userId}/status",
             method = RequestMethod.PATCH
     )
     public Object updateStatus(

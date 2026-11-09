@@ -103,6 +103,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleException(
             Exception e
     ) {
+
+        // 실제 오류 원인을 IntelliJ 실행 창에 출력
+        e.printStackTrace();
+
         return errorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "서버 내부 오류가 발생했습니다."

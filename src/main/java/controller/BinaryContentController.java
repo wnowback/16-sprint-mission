@@ -15,14 +15,13 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/binaryContents")
 public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
 
-    // 1. 바이너리 파일 1개 다운로드
+    // 1. 기존 바이너리 파일 1개 다운로드
     @RequestMapping(
-            value = "/{binaryContentId}",
+            value = "/api/binaryContents/{binaryContentId}",
             method = RequestMethod.GET
     )
     public ResponseEntity<byte[]> download(
@@ -48,8 +47,11 @@ public class BinaryContentController {
                 .body(binaryContent.getBytes());
     }
 
-    // 2. 바이너리 파일 여러 개 조회
-    @RequestMapping(method = RequestMethod.GET)
+    // 2. 기존 바이너리 파일 여러 개 조회
+    @RequestMapping(
+            value = "/api/binaryContents",
+            method = RequestMethod.GET
+    )
     public List<BinaryContent> findAllByIdIn(
             @RequestParam List<UUID> binaryContentIds
     ) {
@@ -58,5 +60,22 @@ public class BinaryContentController {
         return binaryContentService.findAllByIdIn(
                 binaryContentIds
         );
+    }
+
+    // 3. 심화 요구사항: 바이너리 파일 조회
+    @RequestMapping(
+            value = "/api/binaryContent/find",
+            method = RequestMethod.GET
+    )
+    public ResponseEntity<BinaryContent> find(
+            @RequestParam UUID binaryContentId
+    ) {
+
+        // 파일 ID로 바이너리 데이터 조회
+        BinaryContent binaryContent =
+                binaryContentService.find(binaryContentId);
+
+        // 조회한 BinaryContent 객체 반환
+        return ResponseEntity.ok(binaryContent);
     }
 }
